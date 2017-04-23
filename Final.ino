@@ -31,6 +31,8 @@ void setup()
    Serial.println("Data is sent from the app in the following format");
    Serial.println("(0:Read/1:Write , <Time of the day bit> )");
    Serial.println(" Configurable times are :\n1] Morning\n2] Afternoon\n3] Night\n4] Two Times\n5] Three Times");
+   for(int j=2;j<8;j++)
+   pinMode(j,OUTPUT);
 
   if (! rtc.begin())
   {
@@ -51,7 +53,7 @@ void loop()
 {
   DateTime now = rtc.now();
 
-int cmd=getCmd();
+  int cmd=getCmd();
 
 
   switch (cmd)
@@ -65,6 +67,8 @@ int cmd=getCmd();
     break;
   }
 
+  compTm();
+
 //writeEepromSch();
 //getSchedule();
 //readEepromSch();
@@ -72,6 +76,7 @@ int cmd=getCmd();
 
 /*
     Serial.println("RTC STAT");
+
     Serial.print(now.year(), DEC);
     Serial.print('/');
     Serial.print(now.month(), DEC);
@@ -278,5 +283,66 @@ int getCmd()
   Serial.print("Command");
   Serial.println(cmd);
   return(cmd);
+
+}
+
+//=============================================================================
+
+void compTm()
+{
+  DateTime now = rtc.now();
+  int tm;
+  readEepromSch();
+
+  if(now.hour()==8)
+  {
+    for(int i=0;i<6;i++)
+    {
+      tm= atoi(Eebuff[i].time);
+      if(tm==1||tm==4||tm==5)
+      digitalWrite(i+2,HIGH);
+    }
+
+    delay(1000);
+
+    for(int i=2;i<8;i++)
+    {
+      digitalWrite(i,LOW);
+    }
+  }
+
+  if(now.hour()==15)
+  {
+    for(int i=0;i<6;i++)
+    {
+      tm= atoi(Eebuff[i].time);
+      if(tm==2||tm==5)
+      digitalWrite(i+2,HIGH);
+    }
+
+    delay(1000);
+
+    for(int i=2;i<8;i++)
+    {
+      digitalWrite(i,LOW);
+    }
+  }
+
+  if(now.hour()==20)
+  {
+    for(int i=0;i<6;i++)
+    {
+      tm= atoi(Eebuff[i].time);
+      if(tm==3||tm==4||tm==5)
+      digitalWrite(i+2,HIGH);
+    }
+
+    delay(1000);
+
+    for(int i=2;i<8;i++)
+    {
+      digitalWrite(i,LOW);
+    }
+  }
 
 }

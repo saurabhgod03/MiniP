@@ -29,10 +29,11 @@ void setup()
    Serial.begin(9600);
    Serial.println("Code is for reading and writing schedule to the Microcontroller and configuring the alarms.");
    Serial.println("Data is sent from the app in the following format");
-   Serial.println("(0:Read/1:Write , <Time of the day bit> )");
+   Serial.println("(0:Read/1:Write/2:Reset-RTC/3:HardRead/4:RTCSTAT/5:Blank , <Time of the day bit> )");
    Serial.println(" Configurable times are :\n1] Morning\n2] Afternoon\n3] Night\n4] Two Times\n5] Three Times");
    for(int j=2;j<8;j++)
    pinMode(j,OUTPUT);
+   pinMode(A0,OUTPUT);
 
   if (! rtc.begin())
   {
@@ -43,9 +44,6 @@ void setup()
   if (! rtc.isrunning())
   {
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-
-    // January 21, 2014 at 3am you would call:
-    // rtc.adjust(DateTime(2014, 1, 21, 11, 46, 0));
   }
 }
 
@@ -67,7 +65,37 @@ void loop()
     break;
 
     case 2:
+    Serial.println("Reset RTC");
+    rtc.adjust(DateTime(2017,4,25,12,0,0));
+    break;
+
+    case 3:
     schflag = true;
+    break;
+
+    case 4:
+    Serial.println("RTC STAT");
+
+    Serial.print(now.year(), DEC);
+    Serial.print('/');
+    Serial.print(now.month(), DEC);
+    Serial.print('/');
+    Serial.print(now.day(), DEC);
+    Serial.print(" (");
+    Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
+    Serial.print(") ");
+    Serial.print(now.hour(), DEC);
+    Serial.print(':');
+    Serial.print(now.minute(), DEC);
+    Serial.print(':');
+    Serial.print(now.second(), DEC);
+    Serial.println();
+    break;
+
+    case 5:
+    break;
+
+    default:
     break;
 
   }
@@ -299,13 +327,17 @@ void compTm()
   int tm;
   readEepromSch();
 
-  if(now.hour()==8)
+  //if(now.hour()==8)
+  if(now.minute()==1)
   {
     for(int i=0;i<6;i++)
     {
       tm= atoi(Eebuff[i].time);
       if(tm==1||tm==4||tm==5)
+      {
       digitalWrite(i+2,HIGH);
+      digitalWrite(A0,LOW);
+      }
     }
 
     delay(1000);
@@ -313,16 +345,21 @@ void compTm()
     for(int i=2;i<8;i++)
     {
       digitalWrite(i,LOW);
+      digitalWrite(A0,LOW);
     }
   }
 
-  if(now.hour()==15)
+  //if(now.hour()==15)
+  if(now.minute()==2)
   {
     for(int i=0;i<6;i++)
     {
       tm= atoi(Eebuff[i].time);
       if(tm==2||tm==5)
+      {
       digitalWrite(i+2,HIGH);
+      digitalWrite(A0,LOW);
+      }
     }
 
     delay(1000);
@@ -330,16 +367,21 @@ void compTm()
     for(int i=2;i<8;i++)
     {
       digitalWrite(i,LOW);
+      digitalWrite(A0,LOW);
     }
   }
 
-  if(now.hour()==20)
+  //if(now.hour()==20)
+  if(now.minute()==3)
   {
     for(int i=0;i<6;i++)
     {
       tm= atoi(Eebuff[i].time);
       if(tm==3||tm==4||tm==5)
+      {
       digitalWrite(i+2,HIGH);
+      digitalWrite(A0,LOW);
+      }
     }
 
     delay(1000);
@@ -347,6 +389,7 @@ void compTm()
     for(int i=2;i<8;i++)
     {
       digitalWrite(i,LOW);
+      digitalWrite(A0,LOW);
     }
   }
 

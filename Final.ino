@@ -65,6 +65,11 @@ void loop()
     case 1:
     writeEepromSch();
     break;
+
+    case 2:
+    schflag = true;
+    break;
+
   }
 
   compTm();

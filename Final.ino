@@ -12,6 +12,7 @@ char temp[numChars];
 char tempChars[numChars];
 boolean newData = false;
 boolean schflag = false;
+int flip=0;
 
 char rdwtbt[numChars] = {0};
 
@@ -29,11 +30,19 @@ void setup()
    Serial.begin(9600);
    Serial.println("Code is for reading and writing schedule to the Microcontroller and configuring the alarms.");
    Serial.println("Data is sent from the app in the following format");
-   Serial.println("(0:Read/1:Write/2:Reset-RTC/3:HardRead/4:RTCSTAT/5:Blank , <Time of the day bit> )");
+   Serial.println("(0:Read/1:Write/2:Reset-RTC/3:RTCSTAT/Rest:NoFunction , <Time of the day bit> )");
    Serial.println(" Configurable times are :\n1] Morning\n2] Afternoon\n3] Night\n4] Two Times\n5] Three Times");
+
    for(int j=2;j<8;j++)
    pinMode(j,OUTPUT);
+
    pinMode(A0,OUTPUT);
+
+   if (EEPROM.read(500)==1)
+   {
+     schflag=true;
+     Serial.println("EEPROM YO DELETE LATER");
+   }
 
   if (! rtc.begin())
   {
@@ -51,9 +60,15 @@ void loop()
 {
   DateTime now = rtc.now();
 
+
+if(flip==1)
+{
+  compTm();
+  flip=0;
+}
+else
+{
   int cmd=getCmd();
-
-
   switch (cmd)
   {
     case 0:
@@ -70,10 +85,6 @@ void loop()
     break;
 
     case 3:
-    schflag = true;
-    break;
-
-    case 4:
     Serial.println("RTC STAT");
 
     Serial.print(now.year(), DEC);
@@ -92,20 +103,12 @@ void loop()
     Serial.println();
     break;
 
-    case 5:
-    break;
-
     default:
     break;
 
   }
-
-  compTm();
-
-//writeEepromSch();
-//getSchedule();
-//readEepromSch();
-//while (1);
+  flip=1;
+}
 
 /*
     Serial.println("RTC STAT");
@@ -294,6 +297,7 @@ void writeEepromSch()
   //Eebuff=finSch;
   EEPROM.put(0,finSch);
   schflag = true;
+  EEPROM.update(500,1);
 }
 
 //=============================================================================
@@ -336,11 +340,11 @@ void compTm()
       if(tm==1||tm==4||tm==5)
       {
       digitalWrite(i+2,HIGH);
-      digitalWrite(A0,LOW);
+      digitalWrite(A0,HIGH);
       }
     }
 
-    delay(1000);
+    delay(5000);
 
     for(int i=2;i<8;i++)
     {
@@ -358,11 +362,11 @@ void compTm()
       if(tm==2||tm==5)
       {
       digitalWrite(i+2,HIGH);
-      digitalWrite(A0,LOW);
+      digitalWrite(A0,HIGH);
       }
     }
 
-    delay(1000);
+    delay(5000);
 
     for(int i=2;i<8;i++)
     {
@@ -380,11 +384,11 @@ void compTm()
       if(tm==3||tm==4||tm==5)
       {
       digitalWrite(i+2,HIGH);
-      digitalWrite(A0,LOW);
+      digitalWrite(A0,HIGH);
       }
     }
 
-    delay(1000);
+    delay(5000);
 
     for(int i=2;i<8;i++)
     {
